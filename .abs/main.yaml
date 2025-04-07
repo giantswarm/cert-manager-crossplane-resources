@@ -1,4 +1,4 @@
 replace-chart-version-with-git: true
 generate-metadata: true
-chart-dir: ./helm/cert-manager-crossplane-resources
+chart-dir: ./helm/cm-crossplane-resources
 destination: ./build
