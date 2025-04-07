@@ -1,4 +1,4 @@
-name: cm-crossplane-resources
+name: cert-manager-crossplane-resources
 serviceType: managed
 
 clusterName: ""

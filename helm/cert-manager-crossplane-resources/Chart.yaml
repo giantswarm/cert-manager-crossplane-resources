@@ -1,15 +1,15 @@
 apiVersion: v2
 appVersion: 0.0.1
 # Please make sure your name DOES NOT end in "app" or "-app".
-name: cm-crossplane-resources
+name: cert-manager-crossplane-resources
 # Please describe what the app provides in a sentence or two.
 description: Crossplane Resources for cert-manager
-home: https://github.com/giantswarm/cm-crossplane-resources
+home: https://github.com/giantswarm/cert-manager-crossplane-resources
 # If you have an icon/logo, you should add it to https://github.com/giantswarm/web-assets
 # and set the final URL as a value here and uncomment.
 icon: https://s.giantswarm.io/app-icons/cert-manager/1/light.svg
 sources:
-  - https://github.com/giantswarm/cm-crossplane-resources
+  - https://github.com/giantswarm/cert-manager-crossplane-resources
 version: 0.0.5
 annotations:
   application.giantswarm.io/team: shield
