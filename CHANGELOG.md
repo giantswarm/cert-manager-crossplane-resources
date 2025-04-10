@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Included the `giantswarm.io/cluster` label
 
 ## [0.0.6] - 2025-04-07
