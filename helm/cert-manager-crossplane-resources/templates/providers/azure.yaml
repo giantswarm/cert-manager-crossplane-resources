@@ -1,0 +1,65 @@
+{{- if .Values.providers.azure.enabled }}
+apiVersion: azure.upbound.io/v1beta1
+kind: UserAssignedIdentity
+metadata:
+  name: {{.Values.clusterName}}-cert-manager
+  namespace: {{.Release.Namespace}}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  providerConfigRef:
+    name: {{.Values.clusterName}}
+  forProvider:
+    resourceGroupName: {{.Values.providers.azure.resourceGroup}}
+    location: {{.Values.providers.azure.location}}
+    tags:
+      giantswarm.io/cluster: {{.Values.clusterName}}
+      sigs.k8s.io/cluster-api-provider-azure/cluster/{{.Values.clusterName}}: owned
+---
+apiVersion: azure.upbound.io/v1beta1
+kind: RoleAssignment
+metadata:
+  name: {{.Values.clusterName}}-cert-manager-dns-contributor
+  namespace: {{.Release.Namespace}}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  providerConfigRef:
+    name: {{.Values.clusterName}}
+  forProvider:
+    principalId: 
+      # Reference the principal ID from the created user assigned identity
+      fieldPath: status.atProvider.principalId
+      resourceRef:
+        kind: UserAssignedIdentity
+        name: {{.Values.clusterName}}-cert-manager
+    # DNS Zone Contributor role
+    roleDefinitionId: "/subscriptions/{{.Values.providers.azure.subscriptionId}}/providers/Microsoft.Authorization/roleDefinitions/befefa01-2a29-4197-83a8-272ff33ce314"
+    scope: "/subscriptions/{{.Values.providers.azure.subscriptionId}}"
+    skipServicePrincipalAadCheck: true
+
+{{- if .Values.providers.azure.workloadIdentity.enabled }}
+---
+apiVersion: azure.upbound.io/v1beta1
+kind: FederatedIdentityCredential
+metadata:
+  name: {{.Values.clusterName}}-cert-manager
+  namespace: {{.Release.Namespace}}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  providerConfigRef:
+    name: {{.Values.clusterName}}
+  forProvider:
+    resourceGroupName: {{.Values.providers.azure.resourceGroup}}
+    # Reference the resource ID from the created user assigned identity
+    parentId:
+      fieldPath: status.atProvider.id
+      resourceRef:
+        kind: UserAssignedIdentity
+        name: {{.Values.clusterName}}-cert-manager
+    audience: "api://AzureADTokenExchange"
+    issuer: "https://{{.Values.providers.azure.workloadIdentity.oidcIssuerUrl}}"
+    subject: "system:serviceaccount:kube-system:cert-manager-app"
+{{- end }}
+{{- end }}

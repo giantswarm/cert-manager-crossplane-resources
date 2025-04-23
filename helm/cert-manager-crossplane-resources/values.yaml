@@ -1,9 +1,24 @@
 name: cert-manager-crossplane-resources
 serviceType: managed
-
 clusterName: ""
-accountID: ""
-awsPartition: "aws"
-region: ""
-oidcDomain: ""
-oidcDomains: []
+
+providers:
+  # AWS configuration
+  aws:
+    enabled: false
+    accountID: ""
+    partition: "aws"
+    region: ""
+    oidc:
+      domain: ""
+      additionalDomains: []
+
+  # Azure configuration
+  azure:
+    enabled: false
+    subscriptionId: ""
+    resourceGroup: ""
+    location: ""
+    workloadIdentity:
+      enabled: false
+      oidcIssuerUrl: ""

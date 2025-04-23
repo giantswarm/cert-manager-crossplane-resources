@@ -40,10 +40,32 @@ helm.sh/chart: {{ include "chart" . | quote }}
 {{/*
 Get list of all provided OIDC domains
 */}}
-{{- define "oidcDomains" -}}
-{{- $oidcDomains := list .Values.oidcDomain -}}
-{{- if .Values.oidcDomains -}}
-{{- $oidcDomains = concat $oidcDomains .Values.oidcDomains -}}
+{{- define "aws.oidcDomains" -}}
+{{- $oidcDomains := list .Values.providers.aws.oidc.domain -}}
+{{- if .Values.providers.aws.oidc.additionalDomains -}}
+{{- $oidcDomains = concat $oidcDomains .Values.providers.aws.oidc.additionalDomains -}}
 {{- end -}}
 {{- compact $oidcDomains | uniq | toJson -}}
+{{- end -}}
+
+{{/*
+Check if AWS is properly configured
+*/}}
+{{- define "aws.isProperlyConfigured" -}}
+{{- if and .Values.providers.aws.enabled .Values.providers.aws.accountID .Values.providers.aws.region .Values.providers.aws.oidc.domain -}}
+{{- true -}}
+{{- else -}}
+{{- false -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Check if Azure is properly configured
+*/}}
+{{- define "azure.isProperlyConfigured" -}}
+{{- if and .Values.providers.azure.enabled .Values.providers.azure.subscriptionId .Values.providers.azure.resourceGroup .Values.providers.azure.location -}}
+{{- true -}}
+{{- else -}}
+{{- false -}}
+{{- end -}}
 {{- end -}}
