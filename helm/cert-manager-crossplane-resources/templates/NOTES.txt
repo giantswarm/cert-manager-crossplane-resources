@@ -1,0 +1,60 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Your release is named {{ .Release.Name }}.
+
+{{- if .Values.providers.aws.enabled }}
+AWS Resources:
+-------------
+An IAM Role has been created with the necessary permissions for Route53 DNS validation.
+
+To use this with cert-manager, make sure to configure your cert-manager Issuer/ClusterIssuer
+with the following Route53 solver configuration:
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    # ... other configurations ...
+    solvers:
+    - dns01:
+        route53:
+          region: {{ .Values.providers.aws.region }}
+          role: arn:{{ .Values.providers.aws.partition }}:iam::{{ .Values.providers.aws.accountID }}:role/{{ .Values.clusterName }}-cert-manager
+{{- end }}
+
+{{- if .Values.providers.azure.enabled }}
+Azure Resources:
+----------------
+The following Azure resources have been created:
+- User Assigned Identity: {{ .Values.clusterName }}-cert-manager
+- Role Assignment with DNS Zone Contributor role
+
+{{- if .Values.providers.azure.workloadIdentity.enabled }}
+- Federated Identity Credential for workload identity
+
+To use this identity with cert-manager, make sure to configure your cert-manager Issuer/ClusterIssuer
+with the following Azure DNS solver configuration:
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    # ... other configurations ...
+    solvers:
+    - dns01:
+        azureDNS:
+          subscriptionID: {{ .Values.providers.azure.subscriptionId }}
+          resourceGroupName: YOUR_DNS_ZONE_RESOURCE_GROUP
+          hostedZoneName: YOUR_DNS_ZONE_NAME
+          # When using workload identity:
+          managedIdentity:
+            clientID: ${AZURE_CLIENT_ID}  # This should be set in cert-manager's environment
+{{- else }}
+To use this identity with cert-manager, you will need to configure additional authentication
+methods such as service principal credentials or managed identity.
+{{- end }}
+{{- end }}
