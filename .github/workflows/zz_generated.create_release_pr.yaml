@@ -185,7 +185,7 @@ jobs:
     steps:
       - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
-          go-version: '=1.25.1'
+          go-version: '=1.25.2'
       - name: Install architect
         uses: giantswarm/install-binary-action@0797deb878056114fa54ee30c519f617716e8c69 # v3.1.1
         with:
