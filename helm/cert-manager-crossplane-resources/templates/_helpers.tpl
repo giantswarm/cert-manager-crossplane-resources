@@ -49,6 +49,13 @@ Get list of all provided OIDC domains
 {{- end -}}
 
 {{/*
+Get list of all allowed Route53 record name patterns for ACME challenges
+*/}}
+{{- define "aws.resourcePatterns" -}}
+{{- compact .Values.providers.aws.resourcePatterns | uniq | toJson -}}
+{{- end -}}
+
+{{/*
 Check if AWS is properly configured
 */}}
 {{- define "aws.isProperlyConfigured" -}}

@@ -12,6 +12,9 @@ providers:
     oidc:
       domain: ""
       additionalDomains: []
+    # Route53 record name patterns cert-manager may change (IAM StringLike wildcards allowed),
+    # e.g. "_acme-challenge.example.com".
+    resourcePatterns: ["_acme-challenge.*"]
 
   # Azure configuration
   azure:
