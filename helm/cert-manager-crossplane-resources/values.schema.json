@@ -56,6 +56,14 @@
                   "description": "Additional OIDC domains for the cluster"
                 }
               }
+            },
+            "resourcePatterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": ["_acme-challenge.*"],
+              "description": "Route53 record name patterns cert-manager may change, such as _acme-challenge.example.com. Wildcards (*) are supported"
             }
           }
         },
