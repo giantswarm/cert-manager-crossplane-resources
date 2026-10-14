@@ -16,6 +16,32 @@ spec:
       giantswarm.io/cluster: {{.Values.clusterName}}
       sigs.k8s.io/cluster-api-provider-azure/cluster/{{.Values.clusterName}}: owned
 ---
+apiVersion: authorization.azure.upbound.io/v1beta1
+kind: RoleDefinition
+metadata:
+  name: {{.Values.clusterName}}-cert-manager-dns-txt
+  namespace: {{.Release.Namespace}}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  providerConfigRef:
+    name: {{.Values.clusterName}}
+  forProvider:
+    name: {{.Values.clusterName}}-cert-manager-dns-txt
+    description: Allows managing TXT records only, used by cert-manager for ACME DNS-01 challenges
+    scope: "/subscriptions/{{.Values.providers.azure.subscriptionId}}"
+    assignableScopes:
+      - "/subscriptions/{{.Values.providers.azure.subscriptionId}}"
+    permissions:
+      - actions:
+          - Microsoft.Network/dnsZones/read
+          - Microsoft.Network/dnsZones/TXT/read
+          - Microsoft.Network/dnsZones/TXT/write
+          - Microsoft.Network/dnsZones/TXT/delete
+          - Microsoft.Network/dnsZones/recordsets/read
+          - Microsoft.Authorization/*/read
+          - Microsoft.Resources/subscriptions/resourceGroups/read
+---
 apiVersion: azure.upbound.io/v1beta1
 kind: RoleAssignment
 metadata:
@@ -33,8 +59,9 @@ spec:
       resourceRef:
         kind: UserAssignedIdentity
         name: {{.Values.clusterName}}-cert-manager
-    # DNS Zone Contributor role
-    roleDefinitionId: "/subscriptions/{{.Values.providers.azure.subscriptionId}}/providers/Microsoft.Authorization/roleDefinitions/befefa01-2a29-4197-83a8-272ff33ce314"
+    # Custom role restricted to TXT records (ACME DNS-01 challenges)
+    roleDefinitionIdRef:
+      name: {{.Values.clusterName}}-cert-manager-dns-txt
     scope: "/subscriptions/{{.Values.providers.azure.subscriptionId}}"
     skipServicePrincipalAadCheck: true
 
