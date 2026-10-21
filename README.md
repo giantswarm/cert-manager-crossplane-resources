@@ -1,70 +1,40 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/giantswarm/cert-manager-crossplane-resources/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/giantswarm/cert-manager-crossplane-resources/tree/main)
 
-[Read me after cloning this template (GS staff only)](https://handbook.giantswarm.io/docs/dev-and-releng/app-developer-processes/adding_app_to_appcatalog/)
+# cert-manager-crossplane-resources
 
-# cert-manager-crossplane-resources chart
-
-Giant Swarm offers a cert-manager-crossplane-resources App which can be installed in workload clusters.
-Here we define the cert-manager-crossplane-resources chart with its templates and default configuration.
-
-**What is this app?**
-
-**Why did we add it?**
-
-**Who can use it?**
+This chart creates the cloud IAM resources that [cert-manager](https://github.com/giantswarm/cert-manager-app) in a workload cluster needs to solve ACME DNS-01 challenges, using [Crossplane](https://docs.crossplane.io/) managed resources that run in the management cluster.
+On AWS it creates an IAM Role, trusted by the cluster's OIDC provider, that may only change `TXT` records matching `_acme-challenge.*` in Route53; on Azure it creates a User Assigned Identity with a custom role limited to `TXT` records in DNS zones, and on AKS a `WorkloadIdentity` that also hands the identity's client ID to cert-manager.
+One release is created per workload cluster, named after the cluster.
 
 ## Installing
 
-There are several ways to install this app onto a workload cluster.
-
-- [Using GitOps to instantiate the App](https://docs.giantswarm.io/advanced/gitops/apps/)
-- [Using our web interface](https://docs.giantswarm.io/platform-overview/web-interface/app-platform/#installing-an-app).
-- By creating an [App resource](https://docs.giantswarm.io/use-the-api/management-api/crd/apps.application.giantswarm.io/) in the management cluster as explained in [Getting started with App Platform](https://docs.giantswarm.io/getting-started/app-platform/).
+The chart is installed automatically into the management cluster by the [`cluster` chart](https://github.com/giantswarm/cluster) as a Flux `HelmRelease` for every workload cluster, which sets `clusterName` and `provider` from the cluster values.
+It is not intended to be installed by customers directly.
+Crossplane and the matching provider must already be running in the management cluster, as they are on Giant Swarm installations.
 
 ## Configuring
 
-### values.yaml
-
-**This is an example of a values file you could upload using our web interface.**
+Enable exactly one provider and fill in the account details the IAM resources should be created in.
+The provider-specific values are documented in the [chart README](helm/cert-manager-crossplane-resources/README.md).
 
 ```yaml
 # values.yaml
+clusterName: abc12
 
+providers:
+  aws:
+    enabled: true
+    accountID: "123456789012"
+    region: eu-west-1
+    oidc:
+      domain: irsa.abc12.example.com
+    # Route53 record names cert-manager may change (IAM StringLike wildcards allowed)
+    resourcePatterns: ["_acme-challenge.*"]
 ```
 
-### Sample App CR and ConfigMap for the management cluster
-
-If you have access to the Kubernetes API on the management cluster, you could create
-the App CR and ConfigMap directly.
-
-Here is an example that would install the app to
-workload cluster `abc12`:
-
-```yaml
-# appCR.yaml
-
-```
-
-```yaml
-# user-values-configmap.yaml
-
-```
-
-See our [full reference on how to configure apps](https://docs.giantswarm.io/getting-started/app-platform/app-configuration/) for more details.
-
-## Compatibility
-
-This app has been tested to work with the following workload cluster release versions:
-
-- _add release version_
-
-## Limitations
-
-Some apps have restrictions on how they can be deployed.
-Not following these limitations will most likely result in a broken deployment.
-
-- _add limitation_
+See our [full reference on how to configure apps](https://docs.giantswarm.io/tutorials/fleet-management/app-platform/app-configuration/) for more details.
 
 ## Credit
 
-- {APP HELM REPOSITORY}
+- [Crossplane](https://github.com/crossplane/crossplane) with the [Upbound AWS](https://github.com/crossplane-contrib/provider-upjet-aws) and [Azure](https://github.com/crossplane-contrib/provider-upjet-azure) providers, whose resource kinds this chart templates.
+- [cert-manager](https://cert-manager.io/) and its [Route53](https://cert-manager.io/docs/configuration/acme/dns01/route53/) and [AzureDNS](https://cert-manager.io/docs/configuration/acme/dns01/azuredns/) DNS-01 solver documentation, which define the required permissions.
