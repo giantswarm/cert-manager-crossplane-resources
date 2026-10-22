@@ -6,8 +6,6 @@ providers:
   # AWS configuration
   aws:
     enabled: false
-    # If `accountID` or `oidc.domain` is empty, the missing values are read from the
-    # `<clusterName>-crossplane-config` ConfigMap created by aws-resolver-rules-operator.
     accountID: ""
     partition: "aws"
     region: ""

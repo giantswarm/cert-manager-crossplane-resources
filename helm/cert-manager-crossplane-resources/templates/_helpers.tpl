@@ -63,8 +63,8 @@ creates once the cluster is provisioned.
 {{- define "aws.values" -}}
 {{- $aws := .Values.providers.aws -}}
 {{- $ret := dict "accountID" $aws.accountID "partition" $aws.partition "oidcDomains" (include "aws.oidcDomains" . | fromJsonArray) -}}
-{{- if or (not $aws.accountID) (not $aws.oidc.domain) -}}
 {{- $configMapName := printf "%s-crossplane-config" .Values.clusterName -}}
+{{- if or (not $aws.accountID) (not $aws.oidc.domain) -}}
 {{- $configMap := lookup "v1" "ConfigMap" .Release.Namespace $configMapName -}}
 {{- if not $configMap -}}
 {{- fail (printf "ConfigMap %s/%s not found" .Release.Namespace $configMapName) -}}
@@ -76,14 +76,13 @@ creates once the cluster is provisioned.
 {{- if not $aws.accountID -}}
 {{- $_ := set $ret "accountID" $crossplaneConfig.accountID -}}
 {{- end -}}
-{{- $_ := set $ret "partition" ($crossplaneConfig.awsPartition | default $aws.partition | default "aws") -}}
+{{- $_ := set $ret "partition" ($crossplaneConfig.awsPartition | default $aws.partition) -}}
 {{- if not $aws.oidc.domain -}}
-{{- $oidcDomains := $crossplaneConfig.oidcDomains | default (list $crossplaneConfig.oidcDomain) -}}
-{{- $_ := set $ret "oidcDomains" (concat $oidcDomains ($aws.oidc.additionalDomains | default list) | compact | uniq) -}}
+{{- $_ := set $ret "oidcDomains" (concat ($crossplaneConfig.oidcDomains | default list) ($aws.oidc.additionalDomains | default list) | compact | uniq) -}}
+{{- end -}}
 {{- end -}}
 {{- if or (not $ret.accountID) (not $ret.oidcDomains) -}}
-{{- fail (printf "ConfigMap %s/%s does not contain the AWS account ID and OIDC domains" .Release.Namespace $configMapName) -}}
-{{- end -}}
+{{- fail (printf "AWS account ID and OIDC domains must be set in `providers.aws` or in the ConfigMap %s/%s" .Release.Namespace $configMapName) -}}
 {{- end -}}
 {{- $ret | toJson -}}
 {{- end -}}
