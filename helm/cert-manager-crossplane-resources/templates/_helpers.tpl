@@ -56,6 +56,39 @@ Get list of all allowed Route53 record name patterns for ACME challenges
 {{- end -}}
 
 {{/*
+Get the AWS account ID, partition, and OIDC domains. If `providers.aws.accountID` or `providers.aws.oidc.domain` is
+empty, read the missing values from the `<clusterName>-crossplane-config` ConfigMap, which aws-resolver-rules-operator
+creates once the cluster is provisioned.
+*/}}
+{{- define "aws.values" -}}
+{{- $aws := .Values.providers.aws -}}
+{{- $ret := dict "accountID" $aws.accountID "partition" $aws.partition "oidcDomains" (include "aws.oidcDomains" . | fromJsonArray) -}}
+{{- if or (not $aws.accountID) (not $aws.oidc.domain) -}}
+{{- $configMapName := printf "%s-crossplane-config" .Values.clusterName -}}
+{{- $configMap := lookup "v1" "ConfigMap" .Release.Namespace $configMapName -}}
+{{- if not $configMap -}}
+{{- fail (printf "ConfigMap %s/%s not found" .Release.Namespace $configMapName) -}}
+{{- end -}}
+{{- if not $configMap.data.values -}}
+{{- fail (printf "ConfigMap %s/%s does not contain values" .Release.Namespace $configMapName) -}}
+{{- end -}}
+{{- $crossplaneConfig := $configMap.data.values | fromYaml -}}
+{{- if not $aws.accountID -}}
+{{- $_ := set $ret "accountID" $crossplaneConfig.accountID -}}
+{{- end -}}
+{{- $_ := set $ret "partition" ($crossplaneConfig.awsPartition | default $aws.partition | default "aws") -}}
+{{- if not $aws.oidc.domain -}}
+{{- $oidcDomains := $crossplaneConfig.oidcDomains | default (list $crossplaneConfig.oidcDomain) -}}
+{{- $_ := set $ret "oidcDomains" (concat $oidcDomains ($aws.oidc.additionalDomains | default list) | compact | uniq) -}}
+{{- end -}}
+{{- if or (not $ret.accountID) (not $ret.oidcDomains) -}}
+{{- fail (printf "ConfigMap %s/%s does not contain the AWS account ID and OIDC domains" .Release.Namespace $configMapName) -}}
+{{- end -}}
+{{- end -}}
+{{- $ret | toJson -}}
+{{- end -}}
+
+{{/*
 Check if AWS is properly configured
 */}}
 {{- define "aws.isProperlyConfigured" -}}
