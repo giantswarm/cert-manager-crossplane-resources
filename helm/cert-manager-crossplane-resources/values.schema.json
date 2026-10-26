@@ -29,12 +29,11 @@
             },
             "accountID": {
               "type": "string",
-              "description": "AWS account ID"
+              "description": "AWS account ID. If empty, it is read from the <clusterName>-crossplane-config ConfigMap."
             },
             "partition": {
               "type": "string",
-              "description": "AWS partition (aws, aws-cn, aws-us-gov, etc.)",
-              "default": "aws"
+              "description": "AWS partition (aws, aws-cn, aws-us-gov, etc.). If empty, it is read from the <clusterName>-crossplane-config ConfigMap."
             },
             "region": {
               "type": "string",
@@ -46,7 +45,7 @@
               "properties": {
                 "domain": {
                   "type": "string",
-                  "description": "Primary OIDC domain for the cluster"
+                  "description": "Primary OIDC domain for the cluster. If empty, the OIDC domains are read from the <clusterName>-crossplane-config ConfigMap."
                 },
                 "additionalDomains": {
                   "type": "array",

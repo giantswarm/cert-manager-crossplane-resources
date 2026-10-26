@@ -1,4 +1,5 @@
 {{- if .Values.providers.aws.enabled }}
+{{- $aws := include "aws.values" . | fromJson }}
 apiVersion: iam.aws.upbound.io/v1beta1
 kind: Role
 metadata:
@@ -17,12 +18,11 @@ spec:
       {
         "Version": "2012-10-17",
         "Statement": [
-          {{- $oidcDomains := include "aws.oidcDomains" . | fromJsonArray -}}
-          {{- range $index, $oidcDomain := $oidcDomains -}}
+          {{- range $index, $oidcDomain := $aws.oidcDomains -}}
           {{- if not (eq $index 0) }}, {{ end }}{
             "Effect": "Allow",
             "Principal": {
-              "Federated": "arn:{{$.Values.providers.aws.partition}}:iam::{{$.Values.providers.aws.accountID}}:oidc-provider/{{$oidcDomain}}"
+              "Federated": "arn:{{$aws.partition}}:iam::{{$aws.accountID}}:oidc-provider/{{$oidcDomain}}"
             },
             "Action": "sts:AssumeRoleWithWebIdentity",
             "Condition": {
@@ -43,12 +43,12 @@ spec:
               {
                 "Effect": "Allow",
                 "Action": "route53:GetChange",
-                "Resource": "arn:{{$.Values.providers.aws.partition}}:route53:::change/*"
+                "Resource": "arn:{{$aws.partition}}:route53:::change/*"
               },
               {
                 "Effect": "Allow",
                 "Action": "route53:ChangeResourceRecordSets",
-                "Resource": "arn:{{$.Values.providers.aws.partition}}:route53:::hostedzone/*",
+                "Resource": "arn:{{$aws.partition}}:route53:::hostedzone/*",
                 "Condition": {
                   "ForAllValues:StringEquals": {
                     "route53:ChangeResourceRecordSetsRecordTypes": ["TXT"]
@@ -62,7 +62,7 @@ spec:
               {
                 "Effect": "Allow",
                 "Action": "route53:ListResourceRecordSets",
-                "Resource": "arn:{{$.Values.providers.aws.partition}}:route53:::hostedzone/*"
+                "Resource": "arn:{{$aws.partition}}:route53:::hostedzone/*"
               },
               {
                 "Effect": "Allow",

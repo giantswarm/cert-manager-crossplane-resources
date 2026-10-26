@@ -7,7 +7,7 @@ providers:
   aws:
     enabled: false
     accountID: ""
-    partition: "aws"
+    partition: ""
     region: ""
     oidc:
       domain: ""
