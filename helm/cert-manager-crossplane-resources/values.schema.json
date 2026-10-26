@@ -33,8 +33,7 @@
             },
             "partition": {
               "type": "string",
-              "description": "AWS partition (aws, aws-cn, aws-us-gov, etc.)",
-              "default": "aws"
+              "description": "AWS partition (aws, aws-cn, aws-us-gov, etc.). If empty, it is read from the <clusterName>-crossplane-config ConfigMap."
             },
             "region": {
               "type": "string",
