@@ -82,17 +82,6 @@ the ConfigMap.
 {{- end -}}
 
 {{/*
-Check if Azure is properly configured
-*/}}
-{{- define "azure.isProperlyConfigured" -}}
-{{- if and .Values.providers.azure.enabled .Values.providers.azure.subscriptionId .Values.providers.azure.resourceGroup .Values.providers.azure.location -}}
-{{- true -}}
-{{- else -}}
-{{- false -}}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Determine the resource group name to use.
 */}}
 {{- define "azure.resourceGroupName" -}}
